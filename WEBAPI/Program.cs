@@ -1,24 +1,30 @@
-using WebApi.Repository.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using WebApi.Data;
 using WebApi.Repository;
+using WebApi.Repository.Interfaces;
 using ShubkivTour.Repository;
-using Microsoft.OpenApi.Models;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllers();
+// Додаємо DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Реєструємо репозиторії
 builder.Services.AddScoped<ITour, TourRepository>();
 builder.Services.AddScoped<IGuide, GuideRepository>();
 builder.Services.AddScoped<ILocation, LocationRepository>();
 builder.Services.AddScoped<IEntertainment, EntertainmentRepository>();
 
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -28,4 +34,5 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
 app.Run();

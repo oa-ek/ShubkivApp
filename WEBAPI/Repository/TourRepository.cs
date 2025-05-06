@@ -11,7 +11,7 @@ namespace WebApi.Repository
         private readonly ApplicationDbContext _context;
 
 
-        public TourRepository(ApplicationDbContext context, UserManager<Client> userManager)
+        public TourRepository(ApplicationDbContext context)
         {
             _context = context;
         }
