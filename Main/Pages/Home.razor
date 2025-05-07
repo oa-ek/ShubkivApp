@@ -1,7 +1,37 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Routing
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Головна</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4 mb-4">Ласкаво просимо!</h1>
 
-Welcome to your new app.
+        <p>Тут ви зможете керувати гідами, додавати екскурсії, переглядати розклади та багато іншого.</p>
+
+        <div class="mt-5">
+            <NavLink class="btn btn-primary btn-lg me-3" href="/create-guide" Match="NavLinkMatch.All">Наші гіди</NavLink>
+            <NavLink class="btn btn-outline-secondary btn-lg" href="/tours">Екскурсії</NavLink>
+        </div>
+    </div>
+
+    <hr class="my-5" />
+
+    <div class="row text-center">
+        <div class="col-md-4">
+            <i class="bi bi-people-fill display-4 text-primary"></i>
+            <h3 class="mt-3">Команда</h3>
+            <p>Професійні гіди з багаторічним досвідом супроводу туристів.</p>
+        </div>
+        <div class="col-md-4">
+            <i class="bi bi-map-fill display-4 text-success"></i>
+            <h3 class="mt-3">Маршрути</h3>
+            <p>Ретельно продумані маршрути, що охоплюють мальовничі місця України.</p>
+        </div>
+        <div class="col-md-4">
+            <i class="bi bi-calendar-event-fill display-4 text-danger"></i>
+            <h3 class="mt-3">Події</h3>
+            <p>Планування турів, спеціальні пропозиції та святкові заходи.</p>
+        </div>
+    </div>
+</div>

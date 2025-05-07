@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Core.DTO;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Models.DTO;
@@ -22,11 +23,22 @@ namespace WebApi.Controllers
 
         // GET: api/tour
         [HttpGet]
-        public IActionResult GetAll()
+        public List<TourViewModel> GetAllTours()
         {
-            var tours = _tourRepository.GetAllTours();
-            return Ok(tours);
+            return _context.Tours
+                .Include(t => t.TourProgram)
+                .Select(t => new TourViewModel
+                {
+                    Name = t.Name,
+                    Complexity = t.Complexity,
+                    Category = t.Category,
+                    Price = t.Price,
+                    Date = t.Date,
+                    MaxMembers = t.MaxMembers
+                })
+                .ToList();
         }
+
 
         // GET: api/tour/5
         [HttpGet("{id}")]
@@ -41,7 +53,7 @@ namespace WebApi.Controllers
 
         // POST: api/tour
         [HttpPost]
-        public IActionResult CreateTour([FromBody] TourCreateModel model)
+        public IActionResult CreateTour([FromBody] Models.DTO.TourCreateModel model)
         {
             if (model == null)
                 return BadRequest("Модель пуста.");
@@ -103,5 +115,7 @@ namespace WebApi.Controllers
             _tourRepository.DeleteTour(id);
             return NoContent();
         }
+
+
     }
 }

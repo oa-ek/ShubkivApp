@@ -1,0 +1,113 @@
+﻿@page "/tours"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@using Core.DTO
+
+<PageTitle>Список турів</PageTitle>
+
+<h3 class="text-2xl font-bold mb-4">Список турів</h3>
+
+<button class="btn btn-success mb-3" @onclick="GoToCreatePage">Створити тур</button>
+
+@if (tours == null)
+{
+    <p><em>Завантаження...</em></p>
+}
+else if (tours.Count == 0)
+{
+    <p class="text-muted">Наразі турів немає.</p>
+}
+else
+{
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Назва</th>
+                <th>Складність</th>
+                <th>Категорія</th>
+                <th>Ціна</th>
+                <th>Дата</th>
+                <th>Учасники</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tour in tours)
+            {
+                <tr>
+                    <td>@tour.Name</td>
+                    <td>@tour.Complexity</td>
+                    <td>@tour.Category</td>
+                    <td>@tour.Price грн</td>
+                    <td>@tour.Date.ToShortDateString()</td>
+                    <td>@tour.MaxMembers</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteTour(tour.Id)">Видалити</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<TourViewModel> tours;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTours();
+    }
+
+    private async Task LoadTours()
+    {
+        try
+        {
+            tours = await Http.GetFromJsonAsync<List<TourViewModel>>("https://localhost:7035/api/tour");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Помилка завантаження турів: " + ex.Message);
+            tours = new();
+        }
+    }
+
+    private async Task DeleteTour(int id)
+    {
+        Console.WriteLine($"Запит на видалення туру з id: {id}");
+
+        var confirm = await JS.InvokeAsync<bool>("confirm", "Ви впевнені, що хочете видалити цей тур?");
+        if (!confirm)
+        {
+            Console.WriteLine("Видалення скасовано користувачем");
+            return;
+        }
+
+        try
+        {
+            var response = await Http.DeleteAsync($"https://localhost:7035/api/tour/{id}");
+            Console.WriteLine($"Статус відповіді: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Тур з id {id} успішно видалено");
+                await LoadTours();
+            }
+            else
+            {
+                Console.WriteLine($"Не вдалося видалити тур. Код помилки: {response.StatusCode}");
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Додаткове повідомлення про помилку: " + errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка при видаленні туру: {ex.Message}");
+        }
+    }
+
+    private void GoToCreatePage()
+    {
+        NavigationManager.NavigateTo("/tour");
+    }
+}

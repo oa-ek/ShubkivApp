@@ -4,6 +4,7 @@
 @using System.Net.Http.Json
 @using System.ComponentModel.DataAnnotations
 @inject IJSRuntime JS
+@using Core
 @using Core.DTO
 
 <h3>Створити гіда</h3>
@@ -166,7 +167,6 @@ else
             ).ToList();
         }
 
-        // Сортування
         if (sortColumn != null)
         {
             filteredGuides = sortAscending
@@ -174,7 +174,7 @@ else
                 : filteredGuides.OrderByDescending(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList();
         }
 
-        currentPage = 1; // Скидаємо на першу сторінку після фільтрації та сортування
+        currentPage = 1; 
         StateHasChanged();
     }
 
@@ -182,15 +182,15 @@ else
     {
         if (sortColumn == column)
         {
-            sortAscending = !sortAscending; // Якщо вже сортуємо по цьому полю, змінюємо напрямок
+            sortAscending = !sortAscending; 
         }
         else
         {
-            sortColumn = column; // Якщо сортуємо по новому полю, встановлюємо нове поле для сортування
-            sortAscending = true; // Початково сортуємо по зростанню
+            sortColumn = column; 
+            sortAscending = true; 
         }
 
-        ApplyFilter(); // Застосовуємо фільтрацію та сортування
+        ApplyFilter(); 
     }
 
     private IEnumerable<GuideViewModel> GetPagedGuides()

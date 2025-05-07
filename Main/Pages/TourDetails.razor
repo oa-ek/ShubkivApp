@@ -1,0 +1,81 @@
+﻿@page "/tour-details/{TourId:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using Core.DTO
+
+<h3 class="text-2xl font-bold mb-4">Деталі туру</h3>
+
+@if (tour == null)
+{
+    <p><em>Завантаження...</em></p>
+}
+else
+{
+    <div class="mb-3">
+        <strong>Назва:</strong> @tour.Name
+    </div>
+    <div class="mb-3">
+        <strong>Складність:</strong> @tour.Complexity
+    </div>
+    <div class="mb-3">
+        <strong>Категорія:</strong> @tour.Category
+    </div>
+    <div class="mb-3">
+        <strong>Ціна:</strong> @tour.Price грн
+    </div>
+    <div class="mb-3">
+        <strong>Кількість учасників:</strong> @tour.MaxMembers
+    </div>
+    <div class="mb-3">
+        <strong>Дата:</strong> @tour.Date.ToShortDateString()
+    </div>
+
+    <div class="mb-4">
+        <h5 class="font-bold">Гіди:</h5>
+        <ul>
+            @foreach (var guide in tour.Guides)
+            {
+                <li>@guide.Name</li>
+            }
+        </ul>
+    </div>
+
+    <div class="mb-4">
+        <h5 class="font-bold">Програма туру:</h5>
+        @if (tour.TourProgram != null)
+        {
+            <p><strong>@tour.TourProgram.Name</strong></p>
+            <ul>
+                @foreach (var step in tour.TourProgram.Steps)
+                {
+                    <li>@step</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="text-muted">Програма не вказана.</p>
+        }
+    </div>
+
+  //  <button class="btn btn-secondary" @onclick="() => Navigation.NavigateTo("/tours")">Назад до списку</button>
+}
+
+@code {
+    [Parameter]
+    public int TourId { get; set; }
+
+    private TourDetailsViewModel? tour;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            tour = await Http.GetFromJsonAsync<TourDetailsViewModel>($"https://localhost:7035/api/tour/{TourId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка завантаження деталей туру: {ex.Message}");
+        }
+    }
+}

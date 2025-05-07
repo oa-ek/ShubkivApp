@@ -1,6 +1,8 @@
 ﻿@page "/tour"
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@using Core
+@using Core.DTO
 
 <h3 class="text-2xl font-bold mb-4">Створення туру</h3>
 
@@ -125,32 +127,5 @@
 	//Navigation.NavigateTo("/tour");
 	var response = await Http.PostAsJsonAsync("https://localhost:7035/api/tour", tourModel);
 	message = response.IsSuccessStatusCode ? "Гіда створено!" : "Помилка при створенні.";
-
-		}
-
-		public class TourCreateModel
-		{
-	public string Name { get; set; }
-	public string Complexity { get; set; }
-	public string Category { get; set; }
-	public int Price { get; set; }
-	public int MaxMembers { get; set; }
-	public DateTime Date { get; set; }
-	public int TourProgramId { get; set; }
-	public List<int> TourGuideIds { get; set; } = new();
-		}
-
-		public class GuideViewModel
-		{
-	public int Id { get; set; }
-	public string Name { get; set; }
-	public string Specialty { get; set; }
-	public string Contact { get; set; }
-		}
-
-		public class CreateTourProgramDTO
-		{
-	public int Id { get; set; }
-	public string Name { get; set; }
-	}
+	}		
 }

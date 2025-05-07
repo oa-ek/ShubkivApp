@@ -1,5 +1,7 @@
 ﻿@page "/create-tour"
+@using Core.DTO
 @inject HttpClient Http
+
 
 <h3>Створити туристичну програму</h3>
 
@@ -96,7 +98,7 @@
 
     private async Task CreateTourProgram()
     {
-        var dto = new CreateTourProgramDTO
+        var dto = new CreateTourProgramDTOs
             {
                 Name = programName,
                 Days = days
@@ -109,25 +111,5 @@
             programName = string.Empty;
             days.Clear();
         }
-    }
-
-    public class CreateTourProgramDTO
-    {
-        public string Name { get; set; } = string.Empty;
-        public List<DayDTO> Days { get; set; } = new();
-    }
-
-    public class DayDTO
-    {
-        public int DayNumber { get; set; }
-        public List<EventDTO> Events { get; set; } = new();
-    }
-
-    public class EventDTO
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Time { get; set; } = string.Empty; 
-        public string LocationName { get; set; } = string.Empty;
     }
 }
