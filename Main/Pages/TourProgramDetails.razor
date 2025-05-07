@@ -1,0 +1,57 @@
+﻿@page "/tourprogram/{Id:int}"
+@inject HttpClient Http
+@using Core.DTO;
+
+<h3>Програма туру</h3>
+
+@if (program == null)
+{
+    <p>Завантаження...</p>
+}
+else
+{
+    <h4 class="text-xl font-bold">@program.Name</h4>
+
+    @foreach (var day in program.Days.OrderBy(d => d.DayNumber))
+    {
+        <div class="mt-4">
+            <h5 class="text-lg font-semibold">День @day.DayNumber</h5>
+
+            @if (day.Events.Any())
+            {
+                <ul class="list-disc ml-5">
+                    @foreach (var ev in day.Events.OrderBy(e => e.Time))
+                    {
+                        <li class="mb-2">
+                            <strong>@ev.Time.ToString("hh\\:mm")</strong> —
+                            <strong>@ev.Name</strong> (@ev.Location.Name): @ev.Description
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p><em>Немає подій на цей день.</em></p>
+            }
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private TourProgramViewModels? program;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            program = await Http.GetFromJsonAsync<TourProgramViewModels>($"https://localhost:7035/api/tourprogram/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка при завантаженні: {ex.Message}");
+        }
+    }
+}

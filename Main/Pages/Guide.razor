@@ -7,260 +7,277 @@
 @using Core.DTO
 
 <h3>Створити гіда</h3>
-
+@if (isSubmitting)
+{
+	<div class="alert alert-info d-flex align-items-center" role="alert">
+		<div class="spinner-border spinner-border-sm me-2" role="status"></div>
+		Завантаження...
+	</div>
+}
 <EditForm Model="@guide" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+	<DataAnnotationsValidator />
+	<ValidationSummary />
 
-    <div>
-        <label>Ім'я:</label>
-        <InputText @bind-Value="guide.Name" class="form-control" />
-    </div>
+	<div>
+		<label>Ім'я:</label>
+		<InputText @bind-Value="guide.Name" class="form-control" />
+	</div>
 
-    <div>
-        <label>Спеціальність:</label>
-        <InputText @bind-Value="guide.Specialty" class="form-control" />
-    </div>
+	<div>
+		<label>Спеціальність:</label>
+		<InputText @bind-Value="guide.Specialty" class="form-control" />
+	</div>
 
-    <div>
-        <label>Контакт:</label>
-        <InputText @bind-Value="guide.Contact" class="form-control" />
-    </div>
+	<div>
+		<label>Контакт:</label>
+		<InputText @bind-Value="guide.Contact" class="form-control" />
+	</div>
 
-    <button type="submit" class="btn btn-primary">
-        @(guide.Id == 0 ? "Зберегти" : "Оновити")
-    </button>
+	<button type="submit" class="btn btn-primary" >
+		@(guide.Id == 0 ? "Зберегти" : "Оновити")
+	</button>
 </EditForm>
 
 @if (message != null)
 {
-    <p class="text-success">@message</p>
+	<p class="text-success">@message</p>
 }
 
 <h4 class="mt-4">Список гідів</h4>
 
 <InputText class="form-control mb-2"
-           placeholder="Пошук по імені, спеціальності або контакту..."
-           @bind-Value="SearchTerm" />
+		   placeholder="Пошук по імені, спеціальності або контакту..."
+		   @bind-Value="SearchTerm" />
 
 <button class="btn btn-secondary mb-3" @onclick="ApplyFilter">
-    Пошук
+	Пошук
 </button>
 
 @if (filteredGuides != null && filteredGuides.Count > 0)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    <button @onclick='() => SortByColumn("Name")'>Ім'я</button>
-                </th>
-                <th>
-                    <button @onclick='() => SortByColumn("Specialty")'>Спеціальність</button>
-                </th>
-                <th>
-                    <button @onclick='() => SortByColumn("Contact")'>Контакт</button>
-                </th>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>
+					<button @onclick='() => SortByColumn("Name")'>Ім'я</button>
+				</th>
+				<th>
+					<button @onclick='() => SortByColumn("Specialty")'>Спеціальність</button>
+				</th>
+				<th>
+					<button @onclick='() => SortByColumn("Contact")'>Контакт</button>
+				</th>
 
-                <th>Дії</th>
+				<th>Дії</th>
 
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var g in GetPagedGuides())
-            {
-                <tr>
-                    <td>@g.Name</td>
-                    <td>@g.Specialty</td>
-                    <td>@g.Contact</td>
-                    <td>
-                        <button class="btn btn-sm btn-warning me-2" @onclick="() => EditGuide(g)">Редагувати</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteGuide(g.Id)">Видалити</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var g in GetPagedGuides())
+			{
+				<tr>
+					<td>@g.Name</td>
+					<td>@g.Specialty</td>
+					<td>@g.Contact</td>
+					<td>
+						<button class="btn btn-sm btn-warning me-2" @onclick="() => EditGuide(g)">Редагувати</button>
+						<button class="btn btn-sm btn-danger" @onclick="() => DeleteGuide(g.Id)">Видалити</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
 else
 {
-    <p>Немає гідів для відображення.</p>
+	<p>Немає гідів для відображення.</p>
 }
 
 @if (totalPages > 1)
 {
-    <nav>
-        <ul class="pagination">
-            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                <button class="page-link" @onclick="PreviousPage">«</button>
-            </li>
+	<nav>
+		<ul class="pagination">
+			<li class="page-item @(currentPage == 1 ? "disabled" : "")">
+				<button class="page-link" @onclick="PreviousPage">«</button>
+			</li>
 
-            @for (int i = 1; i <= totalPages; i++)
-            {
-                <li class="page-item @(currentPage == i ? "active" : "")">
-                    <button class="page-link" @onclick="() => GoToPage(i)">@i</button>
-                </li>
-            }
+			@for (int i = 1; i <= totalPages; i++)
+			{
+				<li class="page-item @(currentPage == i ? "active" : "")">
+					<button class="page-link" @onclick="() => GoToPage(i)">@i</button>
+				</li>
+			}
 
-            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                <button class="page-link" @onclick="NextPage">»</button>
-            </li>
-        </ul>
-    </nav>
+			<li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+				<button class="page-link" @onclick="NextPage">»</button>
+			</li>
+		</ul>
+	</nav>
 }
 
 @code {
-    private GuideDTOCreate guide = new();
-    private string? message;
-    private List<GuideViewModel> guides = new();
-    private List<GuideViewModel> filteredGuides = new();
+	private bool isSubmitting = false;
 
-    private string _searchTerm = string.Empty;
-    private string SearchTerm
-    {
-        get => _searchTerm;
-        set
-        {
-            _searchTerm = value;
-            ApplyFilter();
-        }
-    }
+	private GuideDTOCreate guide = new();
+	private string? message;
+	private List<GuideViewModel> guides = new();
+	private List<GuideViewModel> filteredGuides = new();
 
-    private string? sortColumn = "Name";
-    private bool sortAscending = true; 
-    private int currentPage = 1;
-    private int pageSize = 5;
-    private int totalPages => (int)Math.Ceiling((double)filteredGuides.Count / pageSize);
+	private string _searchTerm = string.Empty;
+	private string SearchTerm
+	{
+		get => _searchTerm;
+		set
+		{
+			_searchTerm = value;
+			ApplyFilter();
+		}
+	}
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadGuides();
-    }
+	private string? sortColumn = "Name";
+	private bool sortAscending = true;
+	private int currentPage = 1;
+	private int pageSize = 5;
+	private int totalPages => (int)Math.Ceiling((double)filteredGuides.Count / pageSize);
 
-    private async Task LoadGuides()
-    {
-        try
-        {
-            guides = await Http.GetFromJsonAsync<List<GuideViewModel>>("https://localhost:7035/api/guide");
-            ApplyFilter();
-        }
-        catch
-        {
-            message = "Помилка при завантаженні гідів.";
-        }
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadGuides();
+	}
 
-    private void ApplyFilter()
-    {
-        // Фільтрація
-        if (string.IsNullOrWhiteSpace(SearchTerm))
-        {
-            filteredGuides = guides.ToList();
-        }
-        else
-        {
-            filteredGuides = guides.Where(g =>
-                (g.Name?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (g.Specialty?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (g.Contact?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-            ).ToList();
-        }
+	private async Task LoadGuides()
+	{
+		try
+		{
+			guides = await Http.GetFromJsonAsync<List<GuideViewModel>>("https://localhost:7035/api/guide");
+			ApplyFilter();
+		}
+		catch
+		{
+			message = "Помилка при завантаженні гідів.";
+		}
+	}
 
-        // Сортування
-        if (sortColumn != null)
-        {
-            filteredGuides = sortAscending
-                ? filteredGuides.OrderBy(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList()
-                : filteredGuides.OrderByDescending(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList();
-        }
+	private void ApplyFilter()
+	{
+		// Фільтрація
+		if (string.IsNullOrWhiteSpace(SearchTerm))
+		{
+			filteredGuides = guides.ToList();
+		}
+		else
+		{
+			filteredGuides = guides.Where(g =>
+				(g.Name?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+				(g.Specialty?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+				(g.Contact?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+			).ToList();
+		}
 
-        currentPage = 1; // Скидаємо на першу сторінку після фільтрації та сортування
-        StateHasChanged();
-    }
+		// Сортування
+		if (sortColumn != null)
+		{
+			filteredGuides = sortAscending
+				? filteredGuides.OrderBy(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList()
+				: filteredGuides.OrderByDescending(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList();
+		}
 
-    private void SortByColumn(string column)
-    {
-        if (sortColumn == column)
-        {
-            sortAscending = !sortAscending; // Якщо вже сортуємо по цьому полю, змінюємо напрямок
-        }
-        else
-        {
-            sortColumn = column; // Якщо сортуємо по новому полю, встановлюємо нове поле для сортування
-            sortAscending = true; // Початково сортуємо по зростанню
-        }
+		currentPage = 1; // Скидаємо на першу сторінку після фільтрації та сортування
+		StateHasChanged();
+	}
 
-        ApplyFilter(); // Застосовуємо фільтрацію та сортування
-    }
+	private void SortByColumn(string column)
+	{
+		if (sortColumn == column)
+		{
+			sortAscending = !sortAscending;
+		}
+		else
+		{
+			sortColumn = column;
+			sortAscending = true;
+		}
 
-    private IEnumerable<GuideViewModel> GetPagedGuides()
-    {
-        return filteredGuides
-            .Skip((currentPage - 1) * pageSize)
-            .Take(pageSize);
-    }
+		ApplyFilter();
+	}
 
-    private void NextPage()
-    {
-        if (currentPage < totalPages)
-            currentPage++;
-    }
+	private IEnumerable<GuideViewModel> GetPagedGuides()
+	{
+		return filteredGuides
+			.Skip((currentPage - 1) * pageSize)
+			.Take(pageSize);
+	}
 
-    private void PreviousPage()
-    {
-        if (currentPage > 1)
-            currentPage--;
-    }
+	private void NextPage()
+	{
+		if (currentPage < totalPages)
+			currentPage++;
+	}
 
-    private void GoToPage(int page)
-    {
-        if (page >= 1 && page <= totalPages)
-            currentPage = page;
-    }
+	private void PreviousPage()
+	{
+		if (currentPage > 1)
+			currentPage--;
+	}
 
-    private void EditGuide(GuideViewModel g)
-    {
-        guide = new GuideDTOCreate
-            {
-                Id = g.Id,
-                Name = g.Name,
-                Specialty = g.Specialty,
-                Contact = g.Contact
-            };
-    }
+	private void GoToPage(int page)
+	{
+		if (page >= 1 && page <= totalPages)
+			currentPage = page;
+	}
 
-    private async Task DeleteGuide(int id)
-    {
-        var confirmed = await JS.InvokeAsync<bool>("confirm", "Ви впевнені, що хочете видалити гіда?");
-        if (!confirmed) return;
+	private void EditGuide(GuideViewModel g)
+	{
+		guide = new GuideDTOCreate
+			{
+				Id = g.Id,
+				Name = g.Name,
+				Specialty = g.Specialty,
+				Contact = g.Contact
+			};
+	}
 
-        var response = await Http.DeleteAsync($"https://localhost:7035/api/guide/{id}");
-        message = response.IsSuccessStatusCode ? "Гіда видалено!" : "Помилка при видаленні.";
-        await LoadGuides();
-    }
+	private async Task DeleteGuide(int id)
+	{
+		var confirmed = await JS.InvokeAsync<bool>("confirm", "Ви впевнені, що хочете видалити гіда?");
+		if (!confirmed) return;
 
-    private async Task HandleValidSubmit()
-    {
-        if (guide.Id == 0)
-        {
-            var response = await Http.PostAsJsonAsync("https://localhost:7035/api/guide", guide);
-            message = response.IsSuccessStatusCode ? "Гіда створено!" : "Помилка при створенні.";
-        }
-        else
-        {
-            var response = await Http.PutAsJsonAsync($"https://localhost:7035/api/guide/{guide.Id}", guide);
-            if (response.IsSuccessStatusCode)
-            {
-                message = "Гіда оновлено!";
-            }
-            else
-            {
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                message = $"Помилка при оновленні: {errorMessage}";
-            }
-        }
+		var response = await Http.DeleteAsync($"https://localhost:7035/api/guide/{id}");
+		message = response.IsSuccessStatusCode ? "Гіда видалено!" : "Помилка при видаленні.";
+		await LoadGuides();
+	}
 
-        guide = new();
-        await LoadGuides();
-    }
+	private async Task HandleValidSubmit()
+	{
+		isSubmitting = true;
+		try
+		{
+
+			if (guide.Id == 0)
+			{
+				var response = await Http.PostAsJsonAsync("https://localhost:7035/api/guide", guide);
+				message = response.IsSuccessStatusCode ? "Гіда створено!" : "Помилка при створенні.";
+			}
+			else
+			{
+				var response = await Http.PutAsJsonAsync($"https://localhost:7035/api/guide/{guide.Id}", guide);
+				if (response.IsSuccessStatusCode)
+				{
+					message = "Гіда оновлено!";
+				}
+				else
+				{
+					var errorMessage = await response.Content.ReadAsStringAsync();
+					message = $"Помилка при оновленні: {errorMessage}";
+				}
+			}
+		}
+		finally
+		{
+			isSubmitting = false;
+		}
+
+	guide = new();
+		await LoadGuides();
+	}
 }

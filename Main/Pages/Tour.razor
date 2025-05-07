@@ -124,7 +124,7 @@
 	//await Http.PostAsJsonAsync("api/tour", tourModel);
 	//Navigation.NavigateTo("/tour");
 	var response = await Http.PostAsJsonAsync("https://localhost:7035/api/tour", tourModel);
-	message = response.IsSuccessStatusCode ? "Гіда створено!" : "Помилка при створенні.";
+	message = response.IsSuccessStatusCode ? "Тур створено!" : "Помилка при створенні.";
 
 		}
 
