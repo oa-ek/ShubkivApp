@@ -18,5 +18,8 @@ namespace WebApi.Models.DTO
 		public int Members { get; set; }
 		public DateTime Date { get; set; }
         public string ImageFile { get; set; }
+        public string Status { get; set; }
+        public List<int> TourGuideIds { get; set; }
+        public int TourProgramId { get; set; }
     }
 }

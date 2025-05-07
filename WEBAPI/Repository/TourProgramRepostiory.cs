@@ -49,9 +49,10 @@ namespace WebApi.Repository
                 _context.SaveChanges();
             }
         }
-        public IEnumerable<TourProgram> GetAllTourPrograms()
+        public IEnumerable<TourProgram> GetAllProgram()
         {
             return _context.TourPrograms.ToList();
+
         }
         public TourProgram GetTourProgramById(int tourProgramId)
         {

@@ -5,7 +5,7 @@ namespace WebApi.Repository.Interfaces
 {
 	public interface ITourProgram
     {
-        IEnumerable<TourProgram> GetAllTourPrograms();
+        IEnumerable<TourProgram> GetAllProgram();
         TourProgram GetTourProgramById(int tourProgramId);
         Task CreateTourProgramAsync(CreateTourProgramDTO dto);
         void DeleteTourProgram(int id);

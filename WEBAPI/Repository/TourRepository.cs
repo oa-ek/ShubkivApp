@@ -16,13 +16,17 @@ namespace WebApi.Repository
             _context = context;
         }
 
-        public void CreateTour(Tour tour)
+        public void CreateTour(Tour tour, List<int> guideIds)
         {
             if (tour == null)
-            {
                 throw new ArgumentNullException(nameof(tour), "Не всі поля отримали значення");
-            }
 
+            tour.TourGuides = guideIds.Select(id => new TourGuides
+            {
+                GuideId = id,
+                Tour = tour
+            }).ToList();
+            tour.Status = "Накопичення людей";
             _context.Tours.Add(tour);
             _context.SaveChanges();
         }
@@ -39,9 +43,10 @@ namespace WebApi.Repository
 
         public IEnumerable<Tour> GetAllTours()
         {
-            return _context.Tours
-                .Include(t => t.Image)
-                .ToList();
+            /*            return _context.Tours
+                            .Include(t => t.Image)
+                            .ToList();*/
+            return null;
         }
 
         public IEnumerable<Tour> GetExpectedTours()
@@ -97,7 +102,7 @@ namespace WebApi.Repository
             }
 
             var existingTour = _context.Tours
-                .Include(t => t.Image)
+                //.Include(t => t.Image)
                 .Include(t => t.TourProgram)
                 .FirstOrDefault(t => t.Id == updatedTour.Id);
 
@@ -116,7 +121,7 @@ namespace WebApi.Repository
             existingTour.Date = updatedTour.Date;
             existingTour.Status = updatedTour.Status;
 
-            existingTour.Image = updatedTour.Image;
+            //existingTour.Image = updatedTour.Image;
             existingTour.TourProgram = updatedTour.TourProgram;
 
             _context.Tours.Update(existingTour);

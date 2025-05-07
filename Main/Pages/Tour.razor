@@ -1,0 +1,156 @@
+﻿@page "/tour"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3 class="text-2xl font-bold mb-4">Створення туру</h3>
+
+<EditForm Model="@tourModel" OnValidSubmit="@HandleValidSubmit">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+		<label>Назва:</label>
+		<InputText @bind-Value="tourModel.Name" class="form-control mb-1" placeholder="Назва туру" />
+		<label>Складність:</label>
+		<InputText @bind-Value="tourModel.Complexity" class="form-control mb-1" placeholder="Складність" />
+		<label>Категорія:</label>
+		<InputText @bind-Value="tourModel.Category" class="form-control mb-1" placeholder="Категорія" />
+		<label>Ціна:</label>
+		<InputNumber @bind-Value="tourModel.Price" class="form-control mb-1" placeholder="Ціна" />
+		<label>Кількість учасників:</label>
+		<InputNumber @bind-Value="tourModel.MaxMembers" class="form-control mb-1" placeholder="Макс. учасників" />
+		<label>Дата початку:</label>
+		<InputDate @bind-Value="tourModel.Date" class="form-control mb-1" />
+	</div>
+
+	<div class="mb-3">
+		<label class="form-label">Обрати гідів:</label>
+		<ul>
+			@foreach (var guide in guides)
+			{
+				<li @onclick="(() => OnGuideClicked(guide))"
+					style="font-size: 20px; cursor: pointer"
+					class="p-1 mb-1 @(selectedGuides.Contains(guide.Id) ? "bg-success" : null)">
+					@guide.Name
+				</li>
+			}
+		</ul>
+	</div>
+
+	<div class="mb-3">
+		<label class="form-label">Програма туру:</label>
+		<select class="form-select" @bind="tourModel.TourProgramId">
+			<option value="">-- Оберіть програму --</option>
+			@foreach (var program in programs)
+			{
+				<option value="@program.Id">@program.Name</option>
+			}
+		</select>
+	</div>
+
+	<button type="submit" class="btn btn-primary">Створити тур</button>
+	@if (!string.IsNullOrEmpty(message))
+	{
+		<div class="alert alert-info mt-2">@message</div>
+	}
+
+</EditForm>
+
+@code {
+	private TourCreateModel tourModel = new();
+	private List<GuideViewModel> guides = new();
+	private string? message;
+	private List<CreateTourProgramDTO> programs = new();
+
+	private HashSet<int> selectedGuides = new HashSet<int>();
+	private void OnGuideClicked(GuideViewModel guide)
+	{
+		if (!selectedGuides.Add(guide.Id))
+		{
+			selectedGuides.Remove(guide.Id);
+		}
+	}
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			await LoadGuides();
+			await LoadPrograms();
+			//programs = await Http.GetFromJsonAsync<List<CreateTourProgramDTO>>("api/tourprogram");
+		}
+		catch (Exception ex)
+		{
+			message = $"Помилка ініціалізації: {ex.Message}";
+		}
+	}
+
+	private async Task LoadGuides()
+	{
+		try
+		{
+			guides = await Http.GetFromJsonAsync<List<GuideViewModel>>("https://localhost:7035/api/guide");
+		}
+		catch (Exception ex)
+		{
+			message = "Помилка при завантаженні гідів.";
+		}
+	}
+	private async Task LoadPrograms()
+	{
+		try
+		{
+			programs = await Http.GetFromJsonAsync<List<CreateTourProgramDTO>>("https://localhost:7035/api/tourprogram");
+		}
+		catch (Exception ex)
+		{
+			message = "Помилка при завантаженні програм.";
+		}
+	}
+		/*private void OnGuidesChanged(ChangeEventArgs e)
+		{
+			var selectedOptions = e.Value?.ToString()?.Split(',') ?? Array.Empty<string>();
+	tourModel.TourGuideIds = selectedOptions.Select(int.Parse).ToList();
+	}*/
+
+	private async Task HandleValidSubmit()
+		{
+	if (tourModel.TourProgramId == 0)
+	{
+		message = "Будь ласка, виберіть програму.";
+		return;
+	}
+	tourModel.TourGuideIds = selectedGuides.ToList();
+
+	//await Http.PostAsJsonAsync("api/tour", tourModel);
+	//Navigation.NavigateTo("/tour");
+	var response = await Http.PostAsJsonAsync("https://localhost:7035/api/tour", tourModel);
+	message = response.IsSuccessStatusCode ? "Гіда створено!" : "Помилка при створенні.";
+
+		}
+
+		public class TourCreateModel
+		{
+	public string Name { get; set; }
+	public string Complexity { get; set; }
+	public string Category { get; set; }
+	public int Price { get; set; }
+	public int MaxMembers { get; set; }
+	public DateTime Date { get; set; }
+	public int TourProgramId { get; set; }
+	public List<int> TourGuideIds { get; set; } = new();
+		}
+
+		public class GuideViewModel
+		{
+	public int Id { get; set; }
+	public string Name { get; set; }
+	public string Specialty { get; set; }
+	public string Contact { get; set; }
+		}
+
+		public class CreateTourProgramDTO
+		{
+	public int Id { get; set; }
+	public string Name { get; set; }
+	}
+}

@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebApi.Data;
+using WebApi.Models.DTO;
 using WebApi.Models.Entity;
 using WebApi.Repository.Interfaces;
 
@@ -9,10 +12,12 @@ namespace WebApi.Controllers
     public class TourController : ControllerBase
     {
         private readonly ITour _tourRepository;
+        private readonly ApplicationDbContext _context;
 
-        public TourController(ITour tourRepository)
+        public TourController(ITour tourRepository, ApplicationDbContext context)
         {
             _tourRepository = tourRepository;
+            _context = context;
         }
 
         // GET: api/tour
@@ -36,13 +41,30 @@ namespace WebApi.Controllers
 
         // POST: api/tour
         [HttpPost]
-        public IActionResult Create([FromBody] Tour newTour)
+        public IActionResult CreateTour([FromBody] TourCreateModel model)
         {
-            if (newTour == null)
-                return BadRequest("Невірні дані");
+            if (model == null)
+                return BadRequest("Модель пуста.");
 
-            _tourRepository.CreateTour(newTour);
-            return CreatedAtAction(nameof(GetById), new { id = newTour.Id }, newTour);
+            var tourProgram = _context.TourPrograms.FirstOrDefault(tp => tp.Id == model.TourProgramId);
+
+            if (tourProgram == null)
+                return NotFound("Тур програма не знайдена.");
+
+            var tour = new Tour
+            {
+                Name = model.Name,
+                Complexity = model.Complexity,
+                Category = model.Category,
+                Price = model.Price,
+                MaxMembers = model.MaxMembers,
+                Date = model.Date,
+                TourProgram = tourProgram,
+                
+            };
+
+            _tourRepository.CreateTour(tour, model.TourGuideIds);
+            return Ok();
         }
 
         // PUT: api/tour/5
@@ -63,7 +85,7 @@ namespace WebApi.Controllers
             existingTour.Date = updatedTour.Date;
             existingTour.Status = updatedTour.Status;
             existingTour.TourProgram = updatedTour.TourProgram;
-            existingTour.Image = updatedTour.Image;
+            //existingTour.Image = updatedTour.Image;
 
             _tourRepository.UpdateTour(existingTour); 
 

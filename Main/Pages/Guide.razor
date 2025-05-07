@@ -126,8 +126,6 @@ else
         {
             // оновлення
             var response = await Http.PutAsJsonAsync($"https://localhost:7035/api/guide/{guide.Id}", guide);
-            //message = response.IsSuccessStatusCode ? "Гіда оновлено!" : "Помилка при оновленні.";
-            //var errorMessage = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
                 message = "Гіда оновлено!";

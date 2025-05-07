@@ -6,7 +6,7 @@ namespace WebApi.Repository.Interfaces
     {
         IEnumerable<Tour> GetAllTours();
         Tour GetToursById(int tourId);
-        void CreateTour(Tour tour);
+        void CreateTour(Tour tour, List<int> guideIds);
         void DeleteTour(int id);
         void UpdateTour(Tour tour);
 

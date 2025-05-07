@@ -8,8 +8,8 @@ using WebApi.Repository.Interfaces;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class GuideController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -24,9 +24,16 @@ namespace WebApi.Controllers
 
         // GET: api/guide
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Guide>>> GetAllGuides()
+        public async Task<ActionResult<IEnumerable<GuideDTOView>>> GetAll()
         {
-            return await _context.Guides.ToListAsync();
+            var guides = await _context.Guides
+                .Select(g => new GuideDTOView
+                {
+                    Id = g.Id,
+                    Name = g.Name
+                }).ToListAsync();
+
+            return Ok(guides);
         }
 
         // GET: api/guide/5
