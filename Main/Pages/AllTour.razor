@@ -10,6 +10,8 @@
 
 <button class="btn btn-success mb-3" @onclick="GoToCreatePage">Створити тур</button>
 
+
+
 @if (tours == null)
 {
     <p><em>Завантаження...</em></p>
@@ -23,6 +25,7 @@ else
     <table class="table table-hover">
         <thead class="table-light">
             <tr>
+                <th>Id</th> <!-- Додано -->
                 <th>Назва</th>
                 <th>Складність</th>
                 <th>Категорія</th>
@@ -36,6 +39,7 @@ else
             @foreach (var tour in tours)
             {
                 <tr>
+                    <td>@tour.Id</td> <!-- Додано -->
                     <td>@tour.Name</td>
                     <td>@tour.Complexity</td>
                     <td>@tour.Category</td>
@@ -43,11 +47,13 @@ else
                     <td>@tour.Date.ToShortDateString()</td>
                     <td>@tour.MaxMembers</td>
                     <td>
+                        <button class="btn btn-info btn-sm me-2" @onclick="() => GoToProgramPage(tour.Id)">Переглянути</button>
                         <button class="btn btn-danger btn-sm" @onclick="() => DeleteTour(tour.Id)">Видалити</button>
                     </td>
                 </tr>
             }
         </tbody>
+
     </table>
 }
 
@@ -110,4 +116,9 @@ else
     {
         NavigationManager.NavigateTo("/tour");
     }
+    private void GoToProgramPage(int id)
+    {
+        NavigationManager.NavigateTo($"/tourprogram/{id}");
+    }
+
 }
