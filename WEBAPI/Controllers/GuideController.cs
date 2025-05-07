@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Models.Entity;
 using WebApi.Repository;
-using WebApi.Models.DTO;
 using WebApi.Repository.Interfaces;
+using Core.DTO;
 
 namespace WebApi.Controllers
 {
@@ -24,13 +24,15 @@ namespace WebApi.Controllers
 
         // GET: api/guide
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GuideDTOView>>> GetAll()
+        public async Task<ActionResult<IEnumerable<GuideViewModel>>> GetAll()
         {
             var guides = await _context.Guides
-                .Select(g => new GuideDTOView
+                .Select(g => new GuideViewModel
                 {
                     Id = g.Id,
-                    Name = g.Name
+                    Name = g.Name,
+                    Specialty = g.Specialty,
+                    Contact = g.Contact
                 }).ToListAsync();
 
             return Ok(guides);

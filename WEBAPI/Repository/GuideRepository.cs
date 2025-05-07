@@ -2,6 +2,7 @@
 using WebApi.Data;
 using WebApi.Models.Entity;
 using WebApi.Repository.Interfaces;
+using Core.DTO;
 
 namespace WebApi.Repository
 {
