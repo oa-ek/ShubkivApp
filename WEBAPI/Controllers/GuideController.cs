@@ -41,7 +41,7 @@ namespace WebApi.Controllers
         // GET: api/guide/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Guide>> GetGuide(int id)
-        {
+        { 
             var guide = await _context.Guides.FindAsync(id);
 
             if (guide == null)
@@ -66,17 +66,6 @@ namespace WebApi.Controllers
             await _repo.CreateGuide(guide);
             return Ok(guide.Id);
         }
-        /* [HttpPost]
-         public async Task<ActionResult<Guide>> CreateGuide(Guide guide)
-         {
-             if (guide == null)
-                 return BadRequest("Гід не може бути null");
-
-             _context.Guides.Add(guide);
-             await _context.SaveChangesAsync();
-
-             return CreatedAtAction(nameof(GetGuide), new { id = guide.Id }, guide);
-         }*/
 
         // PUT: api/guide/5
         [HttpPut("{id}")]
