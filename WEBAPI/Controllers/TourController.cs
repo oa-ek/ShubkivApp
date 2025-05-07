@@ -29,6 +29,7 @@ namespace WebApi.Controllers
                 .Include(t => t.TourProgram)
                 .Select(t => new TourViewModel
                 {
+                    Id = t.Id,
                     Name = t.Name,
                     Complexity = t.Complexity,
                     Category = t.Category,
