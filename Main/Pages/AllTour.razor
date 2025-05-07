@@ -60,6 +60,7 @@ else
 @code {
     private List<TourViewModel> tours;
 
+
     protected override async Task OnInitializedAsync()
     {
         await LoadTours();
@@ -80,37 +81,29 @@ else
 
     private async Task DeleteTour(int id)
     {
-        Console.WriteLine($"Запит на видалення туру з id: {id}");
-
         var confirm = await JS.InvokeAsync<bool>("confirm", "Ви впевнені, що хочете видалити цей тур?");
         if (!confirm)
-        {
-            Console.WriteLine("Видалення скасовано користувачем");
             return;
-        }
 
         try
         {
             var response = await Http.DeleteAsync($"https://localhost:7035/api/tour/{id}");
-            Console.WriteLine($"Статус відповіді: {response.StatusCode}");
-
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Тур з id {id} успішно видалено");
-                await LoadTours();
+                await LoadTours(); 
             }
             else
             {
-                Console.WriteLine($"Не вдалося видалити тур. Код помилки: {response.StatusCode}");
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Додаткове повідомлення про помилку: " + errorMessage);
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Помилка при видаленні: {response.StatusCode}, {error}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Помилка при видаленні туру: {ex.Message}");
+            Console.WriteLine("Виключення під час видалення туру: " + ex.Message);
         }
     }
+
 
     private void GoToCreatePage()
     {
