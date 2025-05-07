@@ -14,15 +14,11 @@ namespace WebApi.Repository
 			_context = context;
 		}
 
-		public void CreateGuide(Guide guide)
+		public async Task CreateGuide(Guide guide)
 		{
-			if (guide == null)
-			{
-				throw new ArgumentNullException(nameof(guide), "Не всі поля отримали значення");
-			}
-			_context.Guides.Add(guide);
-			_context.SaveChanges();
-		}
+            await _context.Guides.AddAsync(guide);
+            await _context.SaveChangesAsync();
+        }
 
 		public void DeleteGuide(int id)
 		{

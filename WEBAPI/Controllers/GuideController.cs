@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Models.Entity;
+using WebApi.Repository;
+using WebApi.Models.DTO;
+using WebApi.Repository.Interfaces;
 
 namespace WebApi.Controllers
 {
@@ -10,10 +13,13 @@ namespace WebApi.Controllers
     public class GuideController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IGuide _repo;
 
-        public GuideController(ApplicationDbContext context)
+
+        public GuideController(ApplicationDbContext context, IGuide repo)
         {
             _context = context;
+            _repo = repo;
         }
 
         // GET: api/guide
@@ -39,16 +45,29 @@ namespace WebApi.Controllers
 
         // POST: api/guide
         [HttpPost]
-        public async Task<ActionResult<Guide>> CreateGuide(Guide guide)
+        public async Task<IActionResult> Create([FromBody] GuideDTOCreate dto)
         {
-            if (guide == null)
-                return BadRequest("Гід не може бути null");
+            var guide = new Guide
+            {
+                Name = dto.Name,
+                Specialty = dto.Specialty,
+                Contact = dto.Contact
+            };
 
-            _context.Guides.Add(guide);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetGuide), new { id = guide.Id }, guide);
+            await _repo.CreateGuide(guide);
+            return Ok(guide.Id);
         }
+        /* [HttpPost]
+         public async Task<ActionResult<Guide>> CreateGuide(Guide guide)
+         {
+             if (guide == null)
+                 return BadRequest("Гід не може бути null");
+
+             _context.Guides.Add(guide);
+             await _context.SaveChangesAsync();
+
+             return CreatedAtAction(nameof(GetGuide), new { id = guide.Id }, guide);
+         }*/
 
         // PUT: api/guide/5
         [HttpPut("{id}")]
@@ -59,18 +78,13 @@ namespace WebApi.Controllers
                 return BadRequest("ID не співпадає");
             }
 
-            var existingGuide = await _context.Guides.FindAsync(id);
+            var existingGuide = _repo.GetGuideById(id);
             if (existingGuide == null)
             {
                 return NotFound("Гіда не знайдено");
             }
 
-            existingGuide.Name = guide.Name;
-            existingGuide.Specialty = guide.Specialty;
-            existingGuide.Contact = guide.Contact;
-
-            await _context.SaveChangesAsync();
-
+            _repo.UpdateGuide(guide); 
             return NoContent();
         }
 
@@ -78,15 +92,13 @@ namespace WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGuide(int id)
         {
-            var guide = await _context.Guides.FindAsync(id);
-            if (guide == null)
+            var existingGuide = _context.Guides.FirstOrDefault(g => g.Id == id);
+            if (existingGuide == null)
             {
-                return NotFound();
+                return NotFound("Гіда не знайдено.");
             }
 
-            _context.Guides.Remove(guide);
-            await _context.SaveChangesAsync();
-
+            _repo.DeleteGuide(id);
             return NoContent();
         }
     }

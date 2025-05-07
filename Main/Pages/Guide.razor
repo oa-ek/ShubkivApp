@@ -1,0 +1,161 @@
+﻿@page "/create-guide"
+@inject HttpClient Http
+@using System.Text
+@using System.Text.Json
+@using System.Net.Http.Json
+@inject IJSRuntime JS
+
+
+<h3>Створити гіда</h3>
+
+<EditForm Model="@guide" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Ім'я:</label>
+        <InputText @bind-Value="guide.Name" class="form-control" />
+    </div>
+
+    <div>
+        <label>Спеціальність:</label>
+        <InputText @bind-Value="guide.Specialty" class="form-control" />
+    </div>
+
+    <div>
+        <label>Контакт:</label>
+        <InputText @bind-Value="guide.Contact" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        @(guide.Id == 0 ? "Зберегти" : "Оновити")
+    </button>
+</EditForm>
+
+@if (message != null)
+{
+    <p class="text-success">@message</p>
+}
+
+<h4 class="mt-4">Список гідів</h4>
+
+@if (guides != null && guides.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ім'я</th>
+                <th>Спеціальність</th>
+                <th>Контакт</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in guides)
+            {
+                <tr>
+                    <td>@g.Name</td>
+                    <td>@g.Specialty</td>
+                    <td>@g.Contact</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" @onclick="() => EditGuide(g)">Редагувати</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteGuide(g.Id)">Видалити</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Немає гідів для відображення.</p>
+}
+
+@code {
+    private GuideDTOCreate guide = new();
+    private string? message;
+    private List<GuideViewModel> guides = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGuides();
+    }
+
+    private async Task LoadGuides()
+    {
+        try
+        {
+            guides = await Http.GetFromJsonAsync<List<GuideViewModel>>("https://localhost:7035/api/guide");
+        }
+        catch (Exception ex)
+        {
+            message = "Помилка при завантаженні гідів.";
+        }
+    }
+
+    private void EditGuide(GuideViewModel g)
+    {
+        guide = new GuideDTOCreate
+            {
+                Id = g.Id,
+                Name = g.Name,
+                Specialty = g.Specialty,
+                Contact = g.Contact
+            };
+    }
+
+
+    private async Task DeleteGuide(int id)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Ви впевнені, що хочете видалити гіда?");
+        if (!confirmed) return;
+
+        var response = await Http.DeleteAsync($"https://localhost:7035/api/guide/{id}");
+        message = response.IsSuccessStatusCode ? "Гіда видалено!" : "Помилка при видаленні.";
+        await LoadGuides();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (guide.Id == 0)
+        {
+            // створення
+            var response = await Http.PostAsJsonAsync("https://localhost:7035/api/guide", guide);
+            message = response.IsSuccessStatusCode ? "Гіда створено!" : "Помилка при створенні.";
+        }
+        else
+        {
+            // оновлення
+            var response = await Http.PutAsJsonAsync($"https://localhost:7035/api/guide/{guide.Id}", guide);
+            //message = response.IsSuccessStatusCode ? "Гіда оновлено!" : "Помилка при оновленні.";
+            //var errorMessage = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Гіда оновлено!";
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                message = $"Помилка при оновленні: {errorMessage}";
+            }
+        }
+
+        guide = new(); // очищення форми
+        await LoadGuides();
+    }
+
+    public class GuideDTOCreate
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Specialty { get; set; }
+        public string Contact { get; set; }
+    }
+
+    public class GuideViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Specialty { get; set; }
+        public string Contact { get; set; }
+    }
+}

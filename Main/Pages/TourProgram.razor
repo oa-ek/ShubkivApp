@@ -1,0 +1,133 @@
+﻿@page "/create-tour"
+@inject HttpClient Http
+
+<h3>Створити туристичну програму</h3>
+
+<InputText @bind-Value="programName" class="form-control mb-2" placeholder="Назва програми" />
+
+<hr />
+<h4>Додати подію до дня</h4>
+
+<InputText @bind-Value="tempEvent.Name" class="form-control mb-1" placeholder="Назва події" />
+<InputText @bind-Value="tempEvent.Description" class="form-control mb-1" placeholder="Опис" />
+<InputText @bind-Value="tempEvent.Time" class="form-control mb-1" placeholder="Час (HH:mm)" />
+<InputText @bind-Value="tempEvent.LocationName" class="form-control mb-2" placeholder="Назва локації" />
+
+<button class="btn btn-secondary mb-3" @onclick="AddEventToTempList">Додати подію</button>
+
+@if (tempEvents.Any())
+{
+    <ul class="list-group mb-3">
+        @foreach (var ev in tempEvents)
+        {
+            <li class="list-group-item d-flex justify-content-between">
+                <span>@ev.Time - @ev.Name (@ev.LocationName)</span>
+                <button class="btn btn-sm btn-danger" @onclick="() => RemoveTempEvent(ev)">✖</button>
+            </li>
+        }
+    </ul>
+    <button class="btn btn-primary mb-4" @onclick="CreateDay">Створити день</button>
+}
+
+@if (days.Any())
+{
+    <h4>Дні програми</h4>
+    @foreach (var d in days)
+    {
+        <div class="border rounded p-2 mb-2">
+            <strong>День @d.DayNumber</strong>
+            <ul>
+                @foreach (var ev in d.Events)
+                {
+                    <li>@ev.Time - @ev.Name (@ev.LocationName)</li>
+                }
+            </ul>
+        </div>
+    }
+}
+
+@if (days.Any())
+{
+    <button class="btn btn-success" @onclick="CreateTourProgram">Зберегти програму</button>
+}
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p class="text-success mt-2">@message</p>
+}
+
+@code {
+    private string programName = string.Empty;
+    private List<DayDTO> days = new();
+    private List<EventDTO> tempEvents = new();
+    private EventDTO tempEvent = new();
+    private string? message;
+
+    private void AddEventToTempList()
+    {
+        if (TimeOnly.TryParse(tempEvent.Time, out var parsedTime))
+        {
+            tempEvents.Add(new EventDTO
+                {
+                    Name = tempEvent.Name,
+                    Description = tempEvent.Description,
+                    Time = parsedTime.ToString("HH:mm"),
+                    LocationName = tempEvent.LocationName
+                });
+            tempEvent = new(); 
+        }
+    }
+
+    private void RemoveTempEvent(EventDTO ev)
+    {
+        tempEvents.Remove(ev);
+    }
+
+    private void CreateDay()
+    {
+        var day = new DayDTO
+            {
+                DayNumber = days.Count + 1,
+                Events = tempEvents.ToList()
+            };
+        days.Add(day);
+        tempEvents.Clear(); 
+    }
+
+    private async Task CreateTourProgram()
+    {
+        var dto = new CreateTourProgramDTO
+            {
+                Name = programName,
+                Days = days
+            };
+
+        var response = await Http.PostAsJsonAsync("https://localhost:7035/api/TourProgram", dto);
+        message = response.IsSuccessStatusCode ? "Програму створено!" : "Помилка при створенні.";
+        if (response.IsSuccessStatusCode)
+        {
+            programName = string.Empty;
+            days.Clear();
+        }
+    }
+
+    public class CreateTourProgramDTO
+    {
+        public string Name { get; set; } = string.Empty;
+        public List<DayDTO> Days { get; set; } = new();
+    }
+
+    public class DayDTO
+    {
+        public int DayNumber { get; set; }
+        public List<EventDTO> Events { get; set; } = new();
+    }
+
+    public class EventDTO
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Time { get; set; } = string.Empty; 
+        public string LocationName { get; set; } = string.Empty;
+    }
+}
