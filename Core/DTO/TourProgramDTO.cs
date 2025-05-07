@@ -25,10 +25,8 @@ namespace Core.DTO
         public string Time { get; set; } = string.Empty;
         public string LocationName { get; set; } = string.Empty;
     }
-using System.ComponentModel.DataAnnotations;
 
-namespace Core.DTO
-{
+
     public class TourProgramViewModels
     {
         public int Id { get; set; }

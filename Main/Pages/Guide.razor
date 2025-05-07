@@ -159,31 +159,38 @@ else
 		}
 	}
 
-        if (sortColumn != null)
-        {
-            filteredGuides = sortAscending
-                ? filteredGuides.OrderBy(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList()
-                : filteredGuides.OrderByDescending(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList();
-        }
+	private void ApplyFilter()
+	{
+		filteredGuides = string.IsNullOrWhiteSpace(SearchTerm)
+			? guides.ToList()
+			: guides.Where(g =>
+				g.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+				g.Specialty.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+				g.Contact.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+			.ToList();
 
-        currentPage = 1; 
-        StateHasChanged();
-    }
+		if (sortColumn != null)
+		{
+			filteredGuides = sortAscending
+				? filteredGuides.OrderBy(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList()
+				: filteredGuides.OrderByDescending(g => g.GetType().GetProperty(sortColumn)?.GetValue(g, null)).ToList();
+		}
 
-    private void SortByColumn(string column)
-    {
-        if (sortColumn == column)
-        {
-            sortAscending = !sortAscending; 
-        }
-        else
-        {
-            sortColumn = column; 
-            sortAscending = true; 
-        }
+		currentPage = 1;
+		StateHasChanged();
+	}
 
-        ApplyFilter(); 
-    }
+	private void SortByColumn(string column)
+	{
+		if (sortColumn == column)
+		{
+			sortAscending = !sortAscending;
+		}
+		else
+		{
+			sortColumn = column;
+			sortAscending = true;
+		}
 
 		ApplyFilter();
 	}
@@ -239,7 +246,6 @@ else
 		isSubmitting = true;
 		try
 		{
-
 			if (guide.Id == 0)
 			{
 				var response = await Http.PostAsJsonAsync("https://localhost:7035/api/guide", guide);
@@ -264,7 +270,7 @@ else
 			isSubmitting = false;
 		}
 
-	guide = new();
+		guide = new();
 		await LoadGuides();
 	}
 }

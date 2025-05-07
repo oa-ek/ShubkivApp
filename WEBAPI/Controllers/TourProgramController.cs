@@ -25,18 +25,18 @@ namespace WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTourProgram([FromBody] CreateTourProgramDTO dto)
+        public async Task<IActionResult> CreateTourProgram([FromBody] Models.DTO.CreateTourProgramDTO dto)
         {
             await _repo.CreateTourProgramAsync(dto);
             return Ok();
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CreateTourProgramDTO>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Models.DTO.CreateTourProgramDTO>>> GetAll()
 
         {
             var progarms = await _context.TourPrograms
-                .Select(g => new CreateTourProgramDTO
+                .Select(g => new Models.DTO.CreateTourProgramDTO
                 {
                     Id = g.Id,
                     Name = g.Name
